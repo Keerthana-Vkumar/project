@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<head>
+    <title></title>
+</head>
+<body>
+    <ul>
+        <% for (let group of groups) { %>
+            <li><a href="groups/<%= group._id %>"><%= group.group %></a></li>
+            
+        <% } %>
+    </ul>
+    
+</body>
+</html>

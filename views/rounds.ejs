@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="/style.css">
+    <body>
+        <div class="rounds">
+            <h3>Select the first round, and then the second round</h3>
+
+            <button id="round1">ROUND 1</button>
+            <button id="round2">ROUND 2</button>
+        </div>
+       
+    </body>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    
+   <script>
+    var socket = io('http://localhost:3000');
+
+    
+
+    let round1 = document.getElementById("round1");
+console.log("round 1", round1)
+
+round1.addEventListener("click", () => {
+   
+    console.log('round1 chosen')
+    let data = {id: "round1"}
+    socket.emit('roundOne', data);
+    location.href = "/rooms/<%= group._id %>/start";
+})
+
+socket.on('roundOne', (data) => {
+    console.log('round One chosen');
+    location.href = "/rooms/<%= group._id%>/start"
+})
+
+let round2 = document.getElementById("round2");
+console.log("round 2", round2)
+
+round2.addEventListener("click", () => {
+   
+    console.log('round2 chosen')
+    let data = {id: "round2"}
+    socket.emit('roundTwo', data);
+    location.href = "/rooms/<%= group._id%>/story";
+})
+
+socket.on('roundTwo', (data) => {
+    console.log('round two chosen');
+    location.href = "/rooms/<%= group._id%>/story"
+})
+   </script>
+</head>
+</html>

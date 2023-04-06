@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+<title></title>
+</head>
+<body>
+<form action="/groups/<%= id%>/students" method="POST">
+    <h2>add group</h2>
+
+
+    <label for="student1">Students</label>
+
+    <select id="student1" name="student1">
+       
+        <% for (let student of students ) { %>
+            <option value="<%= student.username%>"><%= student.username%></option>
+            
+        <% } %>
+        
+    </select>
+    <label for="student2">Students</label>
+    <select id="student2" name="student2">
+       
+        <% for (let student of students ) { %>
+            <option value="<%= student.username%>"><%= student.username%></option>
+            
+        <% } %>
+        
+    </select>
+
+
+    <button>Save Group</button>
+    
+</form>
+</body>
+</html>
