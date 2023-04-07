@@ -13,8 +13,14 @@ const groupSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Student'
     },
-        quizScore: Number,
-        timeTaken: String,
+    quizScore: {
+        type: Number,
+        default: 0
+        },
+        timeTaken: {
+            minutes: String,
+            seconds: String
+        },
         imageUrls: [
            {type: String}
         ],

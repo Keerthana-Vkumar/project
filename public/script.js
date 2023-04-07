@@ -1,11 +1,11 @@
 console.log('from script tag of group1')
 console.log('room value ', window.room)
 let room = window.room;
+let myScore = window.score;
+let groupId = window.id;
 
 var socket = io('http://localhost:3000');
 
-//let timer = document.getElementById("timer");
-//timer.addEventListener("click", buttonClick);
 
 let stopWatch;
 
@@ -47,19 +47,6 @@ function generateUniqueId(){
     return `id-${timestamp}-${hexadecimalString}`;
 }
 
-/*function chatStripe(isAi, value, uniqueId) {
-    const content = `
-        <div class="wrapper ${isAi ? 'ai' : ''}">
-            <div class="chat">
-                <div class="message" id="${uniqueId}">
-                    ${isAi ? '> ' : ''}
-                    ${value}
-                </div>
-            </div>
-        </div>
-    `;
-    return content;
-}*/
 
 function chatStripe (isAi, value, uniqueId){
     const chatContent = isAi ? `>${value}` : `>${value}`;
@@ -97,22 +84,6 @@ const handleSubmit = async (e) => {
     const messageDiv = document.getElementById(uniqueId);
     console.log('First message div ', messageDiv);
     loader(messageDiv);
-    
-
-    /*
-    let sendData = await process();
-    let result = {};
-    console.log('the send data is ', sendData);
-    
-        console.log(sendData.data);
-        console.log(sendData.elementId)
-        console.log(sendData.myPrompt);
-
-    
-    console.log('in handle submit')
-
-    socket.emit('submitQuestion', (sendData));
-    */
     
 
     const response = await fetch('http://localhost:3000/chat', {
@@ -154,8 +125,6 @@ const handleSubmit = async (e) => {
 
 
 socket.on('broadcastAnswer', (sendData) => {
-    //chatContainer.innerHTML += chatStripe(false, sendData.myPrompt);
-    //process();
     
 
    const data = new FormData(chatgpt);
@@ -212,13 +181,10 @@ function countdown(){
     
     distance = countDownDate - now;
 
-    //let days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    //let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    
     let minutes = Math.floor((distance % (1000 * 60 * 60 )) / (1000 * 60));
     let seconds = Math.floor((distance % (1000 * 60 )) / 1000);
 
-    //document.getElementById("days").innerHTML = days;
-    //document.getElementById("hours").innerHTML = hours;
     document.getElementById("minutes").innerHTML = minutes;
     document.getElementById("seconds").innerHTML = seconds;
 
@@ -226,8 +192,7 @@ function countdown(){
         window.location.href = "/timer";
         //clearInterval(x);
 
-       // document.getElementById("days").innerHTML = "00";
-        //document.getElementById("hours").innerHTML = "00";
+       
         document.getElementById("minutes").innerHTML = "00";
         document.getElementById("seconds").innerHTML = "00";        
 
@@ -247,41 +212,6 @@ function pauseCountdown(){
 }
 
 
-//let messageForm = document.getElementById('send-container');
-//let messageInput = document.getElementById("message-input");
-//let messageContainer = document.getElementById('message-container');
-
-
-
-
-/* const name = prompt('What is your name');
-appendMessage('You joined');
-
-socket.emit('new-user', {name, room});
-
-socket.on('chat-message', data => {
-    appendMessage(`${data.name}: ${data.message}`);
-})
-
-socket.on('user-connected', name => {
-    appendMessage(`${name} connected`);
-})
-
-messageForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const message = messageInput.value;
-    appendMessage(`You: ${message}`);
-    socket.emit('send-chat-message', {message, room});
-    messageInput.value = '';
-})
-
-function appendMessage(message){
-    const messageElement = document.createElement('div');
-    messageElement.innerText = message;
-    messageContainer.append(messageElement);
-}
-*/
-
 const questionElement = document.getElementById("question");
 const answerButtons = document.getElementById("answer-buttons");
 const nextButton = document.getElementById("next-btn");
@@ -292,13 +222,18 @@ console.log('answer element+', answerButtons);
 console.log('next button +', nextButton);
 
 let currentQuestionIndex = 0;
-let score = 0;
+let score = myScore;
 
 
 //const room = 'group1';
 
     socket.emit('join', {room});    
-    console.log('client tries to join group 1');
+    //console.log('client tries to join group 1');
+
+  /*  socket.on('userJoined', (data) => {
+        console.log('this person joined ', data.username)
+    })
+    */
 
 
 socket.on('firstLoadQuestions', (questions) => {
@@ -318,7 +253,7 @@ function resetState(){
 
 function startQuiz(questions){    
     console.log('starting quiz');
-    score = 0;
+   // score = 0;
     nextButton.innerHTML = "Next";
     showQuestion(questions);      
 }
@@ -465,13 +400,14 @@ function showScore(score, questions){
 
 
 function redirectPage(score){
-    console.log('The score is from redirec tpage ', score);
+    console.log('The score is from redirect page ', score);
     let submitQuizId = "submit-quiz";
     let endTime = pauseCountdown();
     let myMinutes = endTime.realMinutes;
     let mySeconds = endTime.realSeconds;
     console.log('end time is ...', endTime);
-   link = "/finishedQuiz?myMinutes="+myMinutes+"&mySeconds="+mySeconds+"&score="+score;
+   link = "/rooms/"+groupId+"/finishedQuiz?myMinutes="+myMinutes+"&mySeconds="+mySeconds+"&score="+score;
+   //link = `/rooms/${groupId}/finishedQuiz?myMinutes=myMinutes&mySeconds=mySeconds&score=score`;
     socket.emit('redirectOthers', ({link, submitQuizId, room}));
     
    location.href = link;

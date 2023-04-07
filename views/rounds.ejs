@@ -3,6 +3,7 @@
     <title></title>
     <link rel="stylesheet" href="/style.css">
     <body>
+            
         <div class="rounds">
             <h3>Select the first round, and then the second round</h3>
 
@@ -26,14 +27,14 @@ console.log("round 1", round1)
 round1.addEventListener("click", () => {
    
     console.log('round1 chosen')
-    let data = {id: "round1"}
+    let data = {id: "round1", room: '<%= group.group%>'}
     socket.emit('roundOne', data);
-    location.href = "/rooms/<%= group._id %>/start";
+    location.href = "/rooms/<%= group._id %>/startQuiz";
 })
 
 socket.on('roundOne', (data) => {
     console.log('round One chosen');
-    location.href = "/rooms/<%= group._id%>/start"
+    location.href = "/rooms/<%= group._id%>/startQuiz"
 })
 
 let round2 = document.getElementById("round2");
@@ -52,5 +53,7 @@ socket.on('roundTwo', (data) => {
     location.href = "/rooms/<%= group._id%>/story"
 })
    </script>
+
+   <script src="/script.js"></script>
 </head>
 </html>

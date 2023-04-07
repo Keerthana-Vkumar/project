@@ -5,18 +5,25 @@
 </head>
 <body>
 
+ 
     <div class="app">
         <div id="left">
             <div class="launch-time">
                
                 
                 <div>
-                    <p id="minutes">00</p>
-                    <span>Minutes</span>
+                    <p id="minutes">00</p> 
+                   
+                   
+                </div>
+
+                <div>
+                    <p>:</p>
                 </div>
                 <div>
                     <p id="seconds">00</p>
-                    <span>Seconds</span>
+                    <span></span>
+                    
                 </div>
             </div>
             
@@ -56,10 +63,26 @@
 
             <script> //var roomValue = group.group;
                 window.room = '<%= group.group%>';
-                console.log('window room set ', window.room);</script>
-        
+                console.log('window room set ', window.room);
+
+            
+
+                
+                
+                window.score = '<%= group.quizScore %>';
+                console.log('window score set ', window.score);
+
+                window.id = '<%= group._id%>'
+                console.log('window id set ', window.id);
+
+                
+                </script>
+
+
+                
             <script type="text/javascript" src="/script.js"></script>
 
+            <script>
  
         /*
         var roomValue = group.group;
@@ -353,7 +376,7 @@ socket.on('user-disconnected', name => {
     appendMessage(`${name} disconnected`);
 })
 */
-
+</script>
 
 </body>
 </html>

@@ -78,7 +78,23 @@
        if(!saveResponse.ok){
             throw new Error('image could not be saved');
        }
+
+       let data = {
+        room: '<%= group.group %>',
+        story: textareaElement.value,
+        storyId: "submitStory"
+       }
+
+       socket.emit('submitStory', data);
+
 }
+
+socket.on('submittingStory', (data) => {
+            console.log('submitting story');
+            let theButton = document.getElementById(data.storyId);
+            theButton.style.display = "none";
+            window.location = "/finishedStory";
+       })
 
         socket.emit('join', {room: '<%= group.group%>'}); 
 

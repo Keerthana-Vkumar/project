@@ -11,6 +11,7 @@ const dotenv = require("dotenv");
 const {Configuration, OpenAIApi} = require('openai');
 const session = require('express-session');
 const passport = require("passport");
+const flash = require("connect-flash");
 const LocalStrategy = require('passport-local');
 
 const { isLoggedIn } = require("./middleware"); 
@@ -18,11 +19,12 @@ const { isLoggedIn } = require("./middleware");
 const Group = require('./models/group');
 const Student = require('./models/student');
 const Teacher = require("./models/teacher")
-const User = require('./models/user');
 
 const userRoutes = require('./routes/auth/users');
 
 const app = express();
+
+
 
 const sessionConfig = {
     secret: 'secret',
@@ -40,19 +42,6 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
-/*passport.use(new LocalStrategy(Student.authenticate()));
-
-
-
-passport.serializeUser(Student.serializeUser());
-passport.deserializeUser(Student.deserializeUser());
-
-
-//passport.use(new LocalStrategy(Teacher.authenticate()));
-
-//passport.serializeUser(Teacher.serializeUser());
-//passport.deserializeUser(Teacher.deserializeUser());
-*/
 
 passport.use('studentLocal', new LocalStrategy(Student.authenticate()));
 passport.use('teacherLocal', new LocalStrategy(Teacher.authenticate()))
@@ -86,21 +75,12 @@ dotenv.config();
 app.use(cors());
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(flash());
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '/views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-/*const http = require("http").createServer();
-const io = require("socket.io")(http, {
-    cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"],
-        allowedHeaders: ["my-custom-header"],
-        credentials: true
-    }
-});
-*/
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http)
@@ -113,26 +93,9 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-/*
-app.use((req, res, next) => {
-    //console.log(req.session);
-    //console.log(req.user);
-    //res.locals.currentUser = req.user;
-   // console.log('current user ', currentUser);
-   console.log('this is middleqare');
-    next();
-    //console.log('called next');
-});*/
-
 
 app.use((req, res, next) => {
-    console.log(req.session)
-    console.log(req.user);
-    res.locals.currentUser = req.user;
-    
-    
-    //console.log('current user ', currentUser)
-    console.log('middleware')
+   res.locals.currentUser = req.user;
     next();
 })
 
@@ -184,29 +147,6 @@ app.get("/logout", (req, res) => {
     });
   
 })
-/*
-app.post("/login", passport.authenticate('local', {failureRedirect: '/'}), (req, res) => {
-    console.log("in login route req.user is ", req.user);
-    const redirectUrl = req.session.returnTo || '/board';
-    
-    delete req.session.returnTo;
-    res.redirect(redirectUrl);
-})
-*/
-
-/*
-app.post('/login', (req, res) => {
-    if (req.body.userType === 'student') {
-        passport.authenticate('studentLocal', () => {
-            if (err) { return next(err); }
-      if (!user) { return res.redirect('/login'); }
-      req.logIn(user, function(err) {
-        if (err) { return next(err); }
-        return res.redirect('/dashboard');
-        })
-    })
-}})
-*/
 
 
 app.post('/login', (req, res) => {
@@ -237,13 +177,6 @@ app.get("/group", async (req, res) => {
 app.post("/group", async (req, res) => {
     console.log('in add grooup');
     console.log(req.body);
-
-    /*let s1 = await Student.findOne({username: req.body.students[0]});
-    console.log('s1 is ', s1);
-
-    let s2 = await Student.findOne({username: req.body.students[1]});
-    console.log('s2 is ', s2);
-    */
 
     const group = new Group(req.body);
     console.log('the group ', group);
@@ -281,7 +214,7 @@ app.post("/groups/:id/students", async (req, res) => {
 
 })
 
-app.post("/rooms/:id/urls", async (req, res) => {
+app.post("/rooms/:id/urls", isLoggedIn, async (req, res) => {
     const {id} = req.params;
     console.log('id is this ', id);
     const group = await Group.findById(id);
@@ -302,24 +235,20 @@ app.post("/rooms/:id/urls", async (req, res) => {
         res.status(500).send({e});
     }
 
-
-//  res.render("story.ejs");
-
-    //res.render("story.ejs");
 })
 
 
-app.get("/rooms/:id/urls", async (req, res) => {
+app.get("/rooms/:id/urls", isLoggedIn, async (req, res) => {
     console.log('get urls request')
     const {id} = req.params;
     console.log('id is this ', id);
     const group = await Group.findById(id);
 
-    console.log('the group here is ', group);
+    //console.log('the group here is ', group);
     res.render('urls', {group});
 })
 
-app.post("/rooms/:id/urls/story", async (req, res) => {
+app.post("/rooms/:id/urls/story", isLoggedIn, async (req, res) => {
     console.log('submit story route');
     const {id} = req.params;
     const group = await Group.findById(id);
@@ -328,8 +257,8 @@ app.post("/rooms/:id/urls/story", async (req, res) => {
         const story = req.body.story;
         group.story = story;
         await group.save();
-        console.log('updated group is ', group);
-        res.redirect('finishedStory');
+       // console.log('updated group is ', group);
+        res.redirect('/finishedStory');
     } catch (e) {
         console.log(e);
         res.status(500).send({e});
@@ -337,13 +266,12 @@ app.post("/rooms/:id/urls/story", async (req, res) => {
     }
 })
 
+app.get("/finishedStory", isLoggedIn, (req, res) => {
+    res.render("finishedStory");
+})
+
 app.get("/", (req, res) => {
     res.render('home');
-}
-);
-
-app.get("/board", isLoggedIn, (req, res) => {
-    res.render('board');
 }
 );
 
@@ -352,9 +280,8 @@ app.get("/rooms", isLoggedIn, async (req, res) => {
     if(req.user.userType === "student"){
        
            const group = await Group.findOne({ $or: [{ student1: req.user._id}, { student2: req.user._id}]});
-           console.log('users group is ', group)
-           res.render('rooms.ejs', {group});
-        
+           //console.log('users group is ', group)
+           res.render('rooms.ejs', {group});       
         
     }
     
@@ -375,24 +302,38 @@ app.get("/timer", (req, res) => {
 
 })
 
-app.get("/finishedQuiz", (req, res) => {
+app.post('/resetScore', (req, res) => {
+    console.log('this is reset score route');
+})
+
+app.get("/rooms/:id/finishedQuiz", async (req, res) => {
     const myMinutes = req.query.myMinutes;
     const mySeconds = req.query.mySeconds;
-    const score = req.query.score;
-    console.log('From finished quiz route: end time ', myMinutes, mySeconds);
-    console.log('from finished quiz: score ', score);
-    const quizLength = questions.length;
-    res.render("finishedQuiz.ejs", {myMinutes, mySeconds, score, quizLength})
-})
-
-app.get("/rooms/:id", async (req, res) => {
-    console.log(req.params.id);
+    score = req.query.score;
     const group = await Group.findById(req.params.id);
-    console.log('group in rounds is ', group);
-    res.render("rounds.ejs", { group });
+    group.quizScore = parseInt(score);
+    group.timeTaken.minutes = myMinutes;
+    group.timeTaken.seconds = mySeconds; 
+    await group.save();
+    console.log('From finished quiz route: end time ', myMinutes, mySeconds);
+    console.log('from finished quiz: score ', group.quizScore);
+    const quizLength = questions.length;
+    score = 0;
+    //console.log('the score is ', score);
+    //console.log('the score from database is ', group.quizScore);
+    //console.log('th eupdated group is ', group)
+    res.render("finishedQuiz.ejs", {myMinutes, mySeconds, score: group.quizScore, quizLength})
 })
 
-app.get("/rooms/:id/start", async (req, res) => {
+app.get("/rooms/:id", isLoggedIn, async (req, res) => {
+    
+    const group = await Group.findById(req.params.id);
+    //console.log('group in rounds is ', group);
+
+    res.render("rounds.ejs", { group, message: req.flash("error") });
+})
+
+app.get("/rooms/:id/start", isLoggedIn, async (req, res) => {
     console.log('id is ', req.params.id);
     const group = await Group.findById(req.params.id);
     console.log('group: ', group);
@@ -401,38 +342,24 @@ app.get("/rooms/:id/start", async (req, res) => {
     
 })
 
-app.get("/rooms/:id/startQuiz", async (req, res) => {
+app.get("/rooms/:id/startQuiz", isLoggedIn, async (req, res) => {
     const {id} = req.params;
     console.log('id is this ', id);
     const group = await Group.findById(id);
-    console.log('group passed to group1.ejs ', group)
-    res.render("group1.ejs", { group });
+    //console.log('group passed to group1.ejs ', group)
+
+
+   res.render("group1.ejs", { group });
 })
 
-app.get("/rooms/:id/story", async (req, res) => {
+
+app.get("/rooms/:id/story", isLoggedIn, async (req, res) => {
     const {id} = req.params;
     console.log('id is this ', id);
     const group = await Group.findById(id);
     res.render("story.ejs", { group });
 })
 
-/*
-app.get("/group1", (req, res) => {
-    res.render('rounds.ejs');
-//    res.render("start.ejs");
-})
-
-
-
-app.get("/roundStart", (req, res) => {
-
-    res.render('group1.ejs', {room: "group1"});
-})
-
-app.get("/group2", (req, res) => {
-    res.render('rounds.ejs');
-})
-*/
 
 app.post("/chat", async (req, res) => {
     try{
@@ -520,12 +447,23 @@ const users = {}
 
 
 io.on('connection', (socket) => {
-    console.log('a client connected');
+    //console.log('a client connected');
     //connections.push(socket);
 
     socket.on('join', (data) => {
+
+      
+      
+
         
-        socket.join(data.room);        
+            socket.join(data.room);  
+     
+           // socket.to(data.room).broadcast.emit('userJoined', req.user)
+            //console.log('a person joined room')
+        
+        
+           
+
         
         io.to(data.room).emit('firstLoadQuestions', questions);
     })
@@ -539,12 +477,12 @@ io.on('connection', (socket) => {
 
     socket.on('roundOne', (data) => {
         console.log('roundone event')
-        socket.broadcast.emit('roundOne', data)
+        socket.broadcast.to(data.room).emit('roundOne', data)
     })
 
     socket.on('roundTwo', (data) => {
         console.log('roundtwo event')
-        socket.broadcast.emit('roundTwo', data)
+        socket.broadcast.to(data.room).emit('roundTwo', data)
     })
 
 
@@ -562,11 +500,7 @@ io.on('connection', (socket) => {
         users[socket.id] = name;
         socket.broadcast.to(room).emit('user-connected', name);
     })
-
-
-    socket.on('send-chat-message', ({message, room}) => {
-        socket.broadcast.to(room).emit('chat-message', {message, name: users[socket.id]});
-    })*/
+*/
 
    
 
@@ -653,16 +587,14 @@ socket.on('handling-next-button', (data) => {
         socket.broadcast.to(data.room).emit('showingUrl', data)
     })
 
+    socket.on('submitStory', (data) => {
+        console.log('submit story');
+        socket.broadcast.to(data.room).emit('submittingStory', data);
+    })
+
  
     socket.on('disconnect', (data) => {
         console.log('a user disconnected');
-        socket.broadcast.to(data.room).emit('user-disconnected', users[socket.id]);
-        delete users[socket.id];
-       
-        /*connections = connections.filter((con) => {
-            con.id !== socket.id;
-        })
-        */
     })
 })
 

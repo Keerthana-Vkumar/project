@@ -4,7 +4,10 @@ const passportLocalMongoose = require('passport-local-mongoose');
 const studentSchema = new mongoose.Schema({
     username: String,
     name: String,
-    individualScore: Number,
+    individualScore: {
+        type: Number,
+        default: 0
+    },
     timeTaken: String,
     userType: {
         type: String,

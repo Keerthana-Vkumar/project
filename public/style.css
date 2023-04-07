@@ -24,6 +24,12 @@
     border: #001e4d;
 }
 
+#left{
+    flex: 1 1 75%;
+}
+
+
+
 #message-container{
     height: 60%;
     width: 99%;
@@ -63,6 +69,16 @@ h1{
     font-size: 18px;
     color: #001e4d;
     font-weight: 600;
+    text-align: left;
+}
+
+#answer-buttons{
+    display: flex;
+    flex-direction: column;
+}
+
+#answer-buttons button{
+    width: 50%;
 }
 
 
@@ -160,7 +176,7 @@ h1{
   }
 
   #app{
-    width: 100vw;
+   width: 60vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
